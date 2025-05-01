@@ -1,0 +1,61 @@
+openapi: 3.1.0
+info:
+  title: GPT Google Sheets Proxy
+  version: 1.0.0
+servers:
+  - url: https://gpt-google-proxy.onrender.com
+paths:
+  /sheets/{spreadsheetId}:
+    get:
+      operationId: getSheet
+      summary: Get data from sheet
+      parameters:
+        - name: spreadsheetId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+    post:
+      operationId: appendData
+      summary: Append data to sheet
+      parameters:
+        - name: spreadsheetId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                values:
+                  type: array
+                  items:
+                    type: array
+                    items:
+                      type: string
+      responses:
+        '200':
+          description: OK
+  /sheets:
+    post:
+      operationId: createSheet
+      summary: Create new sheet
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+      responses:
+        '200':
+          description: OK
