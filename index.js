@@ -24,7 +24,7 @@ app.get('/auth', (req, res) => {
   res.redirect(url);
 });
 
-// Получение токенов
+// Обработка токенов
 app.get('/oauth2callback', async (req, res) => {
   try {
     const { code } = req.query;
@@ -37,7 +37,7 @@ app.get('/oauth2callback', async (req, res) => {
   }
 });
 
-// Чтение диапазона
+// Чтение данных
 app.get('/sheets/:spreadsheetId', async (req, res) => {
   if (!tokens) return res.status(401).send('Not authorized');
   try {
@@ -54,7 +54,7 @@ app.get('/sheets/:spreadsheetId', async (req, res) => {
   }
 });
 
-// Чтение структуры
+// Структура таблицы
 app.get('/sheets/:spreadsheetId/structure', async (req, res) => {
   if (!tokens) return res.status(401).send('Not authorized');
   try {
@@ -69,7 +69,7 @@ app.get('/sheets/:spreadsheetId/structure', async (req, res) => {
   }
 });
 
-// Добавление данных
+// Добавление строк
 app.post('/sheets/:spreadsheetId', async (req, res) => {
   if (!tokens) return res.status(401).send('Not authorized');
   try {
@@ -90,7 +90,7 @@ app.post('/sheets/:spreadsheetId', async (req, res) => {
   }
 });
 
-// Обновление диапазона (replace)
+// Обновление значений
 app.post('/sheets/:spreadsheetId/update', async (req, res) => {
   if (!tokens) return res.status(401).send('Not authorized');
   try {
@@ -109,21 +109,28 @@ app.post('/sheets/:spreadsheetId/update', async (req, res) => {
   }
 });
 
-// batchUpdate для структуры или форматирования
-app.post('/sheets/:spreadsheetId/batchUpdate', async (req, res) => {
+// Расширенный batchUpdate
+app.post('/batchUpdate', async (req, res) => {
   if (!tokens) return res.status(401).send('Not authorized');
+  const { spreadsheetId, requests } = req.body;
+
+  if (!spreadsheetId || !Array.isArray(requests)) {
+    return res.status(400).send('Missing spreadsheetId or requests');
+  }
+
   try {
     oauth2Client.setCredentials(tokens);
     const sheets = google.sheets({ version: 'v4', auth: oauth2Client });
+
     const response = await sheets.spreadsheets.batchUpdate({
-      spreadsheetId: req.params.spreadsheetId,
-      requestBody: {
-        requests: req.body.requests
-      }
+      spreadsheetId,
+      requestBody: { requests }
     });
+
     res.json(response.data);
   } catch (error) {
-    res.status(500).send('BatchUpdate error: ' + error.message);
+    console.error('BatchUpdate error:', error.response?.data || error.message);
+    res.status(500).send('BatchUpdate error: ' + (error.response?.data?.error?.message || error.message));
   }
 });
 
