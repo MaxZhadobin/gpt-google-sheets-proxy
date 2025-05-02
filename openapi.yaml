@@ -1,15 +1,31 @@
 openapi: 3.1.0
 info:
-  title: GPT Google Sheets Proxy
+  title: GPT Sheets Proxy
   version: 1.0.0
 servers:
   - url: https://gpt-google-sheets-proxy-7glv.onrender.com
 paths:
+  /sheets:
+    post:
+      summary: Создать новую таблицу
+      operationId: createSheet
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+      responses:
+        '200':
+          description: Успешное создание таблицы
+
   /sheets/{spreadsheetId}:
     get:
-      operationId: getSheet
-      summary: Read data from a Google Sheet
-      description: Get values from a specific sheet and optional range
+      summary: Получить данные из таблицы
+      operationId: getSheetValues
       parameters:
         - name: spreadsheetId
           in: path
@@ -19,16 +35,14 @@ paths:
         - name: range
           in: query
           required: false
-          description: The A1 notation of the range to retrieve, e.g. "Sheet1!A1:B5"
           schema:
             type: string
       responses:
         '200':
-          description: Successful response with sheet data
+          description: Данные получены
     post:
-      operationId: appendSheetData
-      summary: Append data to a Google Sheet
-      description: Append rows to the specified sheet and optional range
+      summary: Добавить строки в таблицу
+      operationId: appendData
       parameters:
         - name: spreadsheetId
           in: path
@@ -44,33 +58,80 @@ paths:
               properties:
                 range:
                   type: string
-                  description: A1 range where to insert data (e.g. "Sheet1!A1")
                 values:
                   type: array
                   items:
                     type: array
                     items:
                       type: string
-              required:
-                - values
       responses:
         '200':
-          description: Data appended successfully
-  /sheets:
+          description: Строки добавлены
+
+  /sheets/{spreadsheetId}/update:
     post:
-      operationId: createSpreadsheet
-      summary: Create a new Google Spreadsheet
-      description: Creates a new spreadsheet with the optional given title
+      summary: Обновить диапазон (перезапись)
+      operationId: updateValues
+      parameters:
+        - name: spreadsheetId
+          in: path
+          required: true
+          schema:
+            type: string
       requestBody:
-        required: false
+        required: true
         content:
           application/json:
             schema:
               type: object
               properties:
-                title:
+                range:
                   type: string
-                  description: Title of the new spreadsheet
+                values:
+                  type: array
+                  items:
+                    type: array
+                    items:
+                      type: string
       responses:
         '200':
-          description: Spreadsheet created successfully
+          description: Диапазон обновлён
+
+  /sheets/{spreadsheetId}/batchUpdate:
+    post:
+      summary: Выполнить batchUpdate (структура, стили, формат)
+      operationId: batchUpdate
+      parameters:
+        - name: spreadsheetId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                requests:
+                  type: array
+                  items:
+                    type: object
+      responses:
+        '200':
+          description: BatchUpdate выполнен
+
+  /sheets/{spreadsheetId}/structure:
+    get:
+      summary: Получить структуру таблицы (листы, ID)
+      operationId: getStructure
+      parameters:
+        - name: spreadsheetId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Структура получена
