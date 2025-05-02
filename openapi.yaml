@@ -8,19 +8,27 @@ paths:
   /sheets/{spreadsheetId}:
     get:
       operationId: getSheet
-      summary: Get data from sheet
+      summary: Read data from a Google Sheet
+      description: Get values from a specific sheet and optional range
       parameters:
         - name: spreadsheetId
           in: path
           required: true
           schema:
             type: string
+        - name: range
+          in: query
+          required: false
+          description: The A1 notation of the range to retrieve, e.g. "Sheet1!A1:B5"
+          schema:
+            type: string
       responses:
         '200':
-          description: OK
+          description: Successful response with sheet data
     post:
-      operationId: appendData
-      summary: Append data to sheet
+      operationId: appendSheetData
+      summary: Append data to a Google Sheet
+      description: Append rows to the specified sheet and optional range
       parameters:
         - name: spreadsheetId
           in: path
@@ -34,19 +42,25 @@ paths:
             schema:
               type: object
               properties:
+                range:
+                  type: string
+                  description: A1 range where to insert data (e.g. "Sheet1!A1")
                 values:
                   type: array
                   items:
                     type: array
                     items:
                       type: string
+              required:
+                - values
       responses:
         '200':
-          description: OK
+          description: Data appended successfully
   /sheets:
     post:
-      operationId: createSheet
-      summary: Create new sheet
+      operationId: createSpreadsheet
+      summary: Create a new Google Spreadsheet
+      description: Creates a new spreadsheet with the optional given title
       requestBody:
         required: false
         content:
@@ -56,6 +70,7 @@ paths:
               properties:
                 title:
                   type: string
+                  description: Title of the new spreadsheet
       responses:
         '200':
-          description: OK
+          description: Spreadsheet created successfully
