@@ -1,9 +1,10 @@
 openapi: 3.1.0
 info:
-  title: GPT Sheets Proxy
+  title: GPT Google Sheets Proxy
   version: 1.0.0
 servers:
   - url: https://gpt-google-sheets-proxy-7glv.onrender.com
+
 paths:
   /sheets:
     post:
@@ -20,7 +21,7 @@ paths:
                   type: string
       responses:
         '200':
-          description: Успешное создание таблицы
+          description: Таблица создана
 
   /sheets/{spreadsheetId}:
     get:
@@ -42,7 +43,7 @@ paths:
           description: Данные получены
     post:
       summary: Добавить строки в таблицу
-      operationId: appendData
+      operationId: appendRows
       parameters:
         - name: spreadsheetId
           in: path
@@ -66,66 +67,12 @@ paths:
                       type: string
       responses:
         '200':
-          description: Строки добавлены
-
-  /sheets/{spreadsheetId}/update:
-    post:
-      summary: Обновить диапазон (перезапись)
-      operationId: updateValues
-      parameters:
-        - name: spreadsheetId
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                range:
-                  type: string
-                values:
-                  type: array
-                  items:
-                    type: array
-                    items:
-                      type: string
-      responses:
-        '200':
-          description: Диапазон обновлён
-
-  /sheets/{spreadsheetId}/batchUpdate:
-    post:
-      summary: Выполнить batchUpdate (структура, стили, формат)
-      operationId: batchUpdate
-      parameters:
-        - name: spreadsheetId
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                requests:
-                  type: array
-                  items:
-                    type: object
-      responses:
-        '200':
-          description: BatchUpdate выполнен
+          description: Данные добавлены
 
   /sheets/{spreadsheetId}/structure:
     get:
-      summary: Получить структуру таблицы (листы, ID)
-      operationId: getStructure
+      summary: Получить структуру таблицы (названия листов, ID)
+      operationId: getSheetStructure
       parameters:
         - name: spreadsheetId
           in: path
@@ -135,3 +82,59 @@ paths:
       responses:
         '200':
           description: Структура получена
+
+  /sheets/{spreadsheetId}/update:
+    post:
+      summary: Перезаписать данные в диапазоне
+      operationId: updateRange
+      parameters:
+        - name: spreadsheetId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                range:
+                  type: string
+                values:
+                  type: array
+                  items:
+                    type: array
+                    items:
+                      type: string
+      responses:
+        '200':
+          description: Данные обновлены
+
+  /batchUpdate:
+    post:
+      summary: Выполнить batchUpdate (формулы, стили, сортировка, фильтры и др.)
+      operationId: batchUpdate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - spreadsheetId
+                - requests
+              properties:
+                spreadsheetId:
+                  type: string
+                requests:
+                  type: array
+                  description: Массив команд Google Sheets API
+                  items:
+                    type: object
+      responses:
+        '200':
+          description: BatchUpdate выполнен
+        '400':
+          description: Ошибка в параметрах запроса
