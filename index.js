@@ -37,32 +37,44 @@ app.get('/oauth2callback', async (req, res) => {
   }
 });
 
-// Чтение данных из таблицы
+// Чтение диапазона
 app.get('/sheets/:spreadsheetId', async (req, res) => {
   if (!tokens) return res.status(401).send('Not authorized');
   try {
     oauth2Client.setCredentials(tokens);
     const sheets = google.sheets({ version: 'v4', auth: oauth2Client });
-
     const range = req.query.range || 'Sheet1';
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: req.params.spreadsheetId,
       range,
     });
-
     res.json(response.data);
   } catch (error) {
     res.status(500).send('Read error: ' + error.message);
   }
 });
 
-// Добавление данных в таблицу
+// Чтение структуры
+app.get('/sheets/:spreadsheetId/structure', async (req, res) => {
+  if (!tokens) return res.status(401).send('Not authorized');
+  try {
+    oauth2Client.setCredentials(tokens);
+    const sheets = google.sheets({ version: 'v4', auth: oauth2Client });
+    const response = await sheets.spreadsheets.get({
+      spreadsheetId: req.params.spreadsheetId
+    });
+    res.json(response.data);
+  } catch (error) {
+    res.status(500).send('Structure error: ' + error.message);
+  }
+});
+
+// Добавление данных
 app.post('/sheets/:spreadsheetId', async (req, res) => {
   if (!tokens) return res.status(401).send('Not authorized');
   try {
     oauth2Client.setCredentials(tokens);
     const sheets = google.sheets({ version: 'v4', auth: oauth2Client });
-
     const range = req.body.range || 'Sheet1';
     const response = await sheets.spreadsheets.values.append({
       spreadsheetId: req.params.spreadsheetId,
@@ -72,10 +84,46 @@ app.post('/sheets/:spreadsheetId', async (req, res) => {
         values: req.body.values,
       },
     });
-
     res.json(response.data);
   } catch (error) {
-    res.status(500).send('Write error: ' + error.message);
+    res.status(500).send('Append error: ' + error.message);
+  }
+});
+
+// Обновление диапазона (replace)
+app.post('/sheets/:spreadsheetId/update', async (req, res) => {
+  if (!tokens) return res.status(401).send('Not authorized');
+  try {
+    oauth2Client.setCredentials(tokens);
+    const sheets = google.sheets({ version: 'v4', auth: oauth2Client });
+    const { range, values } = req.body;
+    const response = await sheets.spreadsheets.values.update({
+      spreadsheetId: req.params.spreadsheetId,
+      range,
+      valueInputOption: 'RAW',
+      requestBody: { values }
+    });
+    res.json(response.data);
+  } catch (error) {
+    res.status(500).send('Update error: ' + error.message);
+  }
+});
+
+// batchUpdate для структуры или форматирования
+app.post('/sheets/:spreadsheetId/batchUpdate', async (req, res) => {
+  if (!tokens) return res.status(401).send('Not authorized');
+  try {
+    oauth2Client.setCredentials(tokens);
+    const sheets = google.sheets({ version: 'v4', auth: oauth2Client });
+    const response = await sheets.spreadsheets.batchUpdate({
+      spreadsheetId: req.params.spreadsheetId,
+      requestBody: {
+        requests: req.body.requests
+      }
+    });
+    res.json(response.data);
+  } catch (error) {
+    res.status(500).send('BatchUpdate error: ' + error.message);
   }
 });
 
@@ -85,17 +133,14 @@ app.post('/sheets', async (req, res) => {
   try {
     oauth2Client.setCredentials(tokens);
     const sheets = google.sheets({ version: 'v4', auth: oauth2Client });
-
     const resource = {
       properties: {
         title: req.body.title || 'New Sheet',
       },
     };
-
     const spreadsheet = await sheets.spreadsheets.create({
       requestBody: resource,
     });
-
     res.json(spreadsheet.data);
   } catch (error) {
     res.status(500).send('Create error: ' + error.message);
