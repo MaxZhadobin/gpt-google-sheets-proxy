@@ -3,7 +3,7 @@ info:
   title: GPT Google Sheets Proxy
   version: 1.0.0
 servers:
-  - url: https://gpt-google-proxy.onrender.com
+  - url: https://gpt-google-sheets-proxy-7glv.onrender.com
 paths:
   /sheets/{spreadsheetId}:
     get:
