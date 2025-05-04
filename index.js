@@ -7,6 +7,10 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+// Раздача плагин-файлов для GPT
+app.use('/.well-known', express.static('.well-known'));
+app.use(express.static('.')); // для openapi.yaml и logo.png
+
 const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
