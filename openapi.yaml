@@ -144,3 +144,36 @@ paths:
           description: BatchUpdate выполнен
         "400":
           description: Ошибка в параметрах запроса
+
+  /insertFormulaColumn:
+    post:
+      summary: Вставить колонку с формулами
+      operationId: insertFormulaColumn
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - spreadsheetId
+                - formulas
+                - startRow
+                - columnIndex
+              properties:
+                spreadsheetId:
+                  type: string
+                formulas:
+                  type: array
+                  description: Формулы и заголовок (в виде строк, например "=A2+1")
+                  items:
+                    type: string
+                startRow:
+                  type: integer
+                  description: Индекс начальной строки (нумерация с 0)
+                columnIndex:
+                  type: integer
+                  description: Индекс колонки (A=0, B=1 и т.д.)
+      responses:
+        "200":
+          description: Формулы вставлены
