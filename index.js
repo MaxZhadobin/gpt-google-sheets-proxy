@@ -7,7 +7,6 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// Раздача плагин-файлов для GPT
 app.use('/.well-known', express.static('.well-known'));
 app.use(express.static('.')); // для openapi.yaml и logo.png
 
@@ -28,7 +27,6 @@ app.get('/auth', (req, res) => {
   res.redirect(url);
 });
 
-// Обработка токенов
 app.get('/oauth2callback', async (req, res) => {
   try {
     const { code } = req.query;
@@ -113,7 +111,7 @@ app.post('/sheets/:spreadsheetId/update', async (req, res) => {
   }
 });
 
-// ✅ Гибкий batchUpdate — понимает оба формата
+// Универсальный batchUpdate
 app.post('/batchUpdate', async (req, res) => {
   if (!tokens) return res.status(401).send('Not authorized');
   try {
@@ -132,10 +130,55 @@ app.post('/batchUpdate', async (req, res) => {
       requestBody: { requests: finalRequests }
     });
 
-    res.status(204).end(); // No content, всё ок
+    res.status(204).end();
   } catch (error) {
     console.error('BatchUpdate error:', error.response?.data || error.message);
     res.status(500).send('BatchUpdate error: ' + (error.response?.data?.error?.message || error.message));
+  }
+});
+
+// ✅ Новый: вставка формул
+app.post('/insertFormula', async (req, res) => {
+  if (!tokens) return res.status(401).send('Not authorized');
+  try {
+    const { spreadsheetId, formulas, startRow, columnIndex } = req.body;
+
+    if (!spreadsheetId || !Array.isArray(formulas) || startRow == null || columnIndex == null) {
+      return res.status(400).send('Missing parameters');
+    }
+
+    const rows = formulas.map(formula => ({
+      values: [{
+        userEnteredValue: formula.startsWith('=') ? { formulaValue: formula } : { stringValue: formula }
+      }]
+    }));
+
+    oauth2Client.setCredentials(tokens);
+    const sheets = google.sheets({ version: 'v4', auth: oauth2Client });
+
+    const request = {
+      spreadsheetId,
+      requestBody: {
+        requests: [{
+          updateCells: {
+            range: {
+              sheetId: 0,
+              startRowIndex: startRow,
+              endRowIndex: startRow + formulas.length,
+              startColumnIndex: columnIndex,
+              endColumnIndex: columnIndex + 1
+            },
+            rows,
+            fields: 'userEnteredValue'
+          }
+        }]
+      }
+    };
+
+    const response = await sheets.spreadsheets.batchUpdate(request);
+    res.json(response.data);
+  } catch (error) {
+    res.status(500).send('InsertFormula error: ' + error.message);
   }
 });
 
