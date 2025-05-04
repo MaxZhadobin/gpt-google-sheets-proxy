@@ -113,13 +113,14 @@ app.post('/sheets/:spreadsheetId/update', async (req, res) => {
   }
 });
 
-// Расширенный batchUpdate
+// ✅ Обновлённый batchUpdate под GPT Builder
 app.post('/batchUpdate', async (req, res) => {
   if (!tokens) return res.status(401).send('Not authorized');
-  const { spreadsheetId, requests } = req.body;
 
-  if (!spreadsheetId || !Array.isArray(requests)) {
-    return res.status(400).send('Missing spreadsheetId or requests');
+  const { spreadsheetId, requestBody } = req.body;
+
+  if (!spreadsheetId || !requestBody?.requests) {
+    return res.status(400).send('Missing spreadsheetId or requestBody.requests');
   }
 
   try {
@@ -128,7 +129,7 @@ app.post('/batchUpdate', async (req, res) => {
 
     const response = await sheets.spreadsheets.batchUpdate({
       spreadsheetId,
-      requestBody: { requests }
+      requestBody: { requests: requestBody.requests }
     });
 
     res.json(response.data);
