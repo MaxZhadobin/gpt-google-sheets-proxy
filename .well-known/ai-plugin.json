@@ -1,0 +1,17 @@
+{
+  "schema_version": "v1",
+  "name_for_human": "GPT Google Sheets Proxy",
+  "name_for_model": "gpt_google_sheets_proxy",
+  "description_for_human": "Управляй Google Таблицами через GPT",
+  "description_for_model": "Позволяет GPT создавать и редактировать Google Таблицы через API.",
+  "auth": {
+    "type": "none"
+  },
+  "api": {
+    "type": "openapi",
+    "url": "https://gpt-google-sheets-proxy-7glv.onrender.com/openapi.yaml"
+  },
+  "logo_url": "https://gpt-google-sheets-proxy-7glv.onrender.com/logo.png",
+  "contact_email": "support@example.com",
+  "legal_info_url": "https://example.com/legal"
+}
