@@ -138,7 +138,7 @@ app.post('/batchUpdate', async (req, res) => {
 });
 
 // ✅ Новый: вставка формул
-app.post('/insertFormula', async (req, res) => {
+app.post('/insertFormulaColumn', async (req, res) => {
   if (!tokens) return res.status(401).send('Not authorized');
   try {
     const { spreadsheetId, formulas, startRow, columnIndex } = req.body;
