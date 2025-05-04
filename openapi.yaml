@@ -20,7 +20,7 @@ paths:
                 title:
                   type: string
       responses:
-        '200':
+        "200":
           description: Таблица создана
 
   /sheets/{spreadsheetId}:
@@ -39,8 +39,9 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Данные получены
+
     post:
       summary: Добавить строки в таблицу
       operationId: appendRows
@@ -66,7 +67,7 @@ paths:
                     items:
                       type: string
       responses:
-        '200':
+        "200":
           description: Данные добавлены
 
   /sheets/{spreadsheetId}/structure:
@@ -80,7 +81,7 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Структура получена
 
   /sheets/{spreadsheetId}/update:
@@ -109,7 +110,7 @@ paths:
                     items:
                       type: string
       responses:
-        '200':
+        "200":
           description: Данные обновлены
 
   /batchUpdate:
@@ -124,17 +125,22 @@ paths:
               type: object
               required:
                 - spreadsheetId
-                - requests
+                - requestBody
               properties:
                 spreadsheetId:
                   type: string
-                requests:
-                  type: array
-                  description: Массив команд Google Sheets API
-                  items:
-                    type: object
+                requestBody:
+                  type: object
+                  required:
+                    - requests
+                  properties:
+                    requests:
+                      type: array
+                      description: Массив команд Google Sheets API
+                      items:
+                        type: object
       responses:
-        '200':
+        "200":
           description: BatchUpdate выполнен
-        '400':
+        "400":
           description: Ошибка в параметрах запроса
